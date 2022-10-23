@@ -9,14 +9,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/skeleton1231/skeleton/framework"
+	"github.com/skeleton1231/skeleton/framework/gin"
 	"github.com/skeleton1231/skeleton/framework/middleware"
 )
 
 func main() {
-	core := framework.NewCore()
+	//core := framework.NewCore()
+	core := gin.New()
 
-	core.Use(middleware.Recovery())
+	core.Use(gin.Recovery())
 	core.Use(middleware.Cost())
 
 	registerRouter(core)
@@ -27,6 +28,11 @@ func main() {
 		Addr: ":8881",
 	}
 	server.ListenAndServe()
+
+	// 这个goroutine是启动服务的goroutine
+	go func() {
+		server.ListenAndServe()
+	}()
 
 	// 当前的goroutine等待信号量
 	quit := make(chan os.Signal)

@@ -4,7 +4,6 @@ go 1.19
 
 require (
 	github.com/gin-contrib/sse v0.1.0
-	github.com/skeleton1231/skeleton/framework/gin v1.8.1
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/goccy/go-json v0.9.11
 	github.com/json-iterator/go v1.1.12
