@@ -16,7 +16,7 @@ import (
 func main() {
 	core := framework.NewCore()
 
-	core.Use(middleware.Recoverys())
+	core.Use(middleware.Recovery())
 	core.Use(middleware.Cost())
 
 	registerRouter(core)

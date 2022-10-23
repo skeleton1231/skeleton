@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gin-gonic/gin/binding"
+	"github.com/skeleton1231/skeleton/framework/gin/binding"
 	"github.com/stretchr/testify/assert"
 )
 

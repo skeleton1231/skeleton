@@ -9,7 +9,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/gin-gonic/gin/binding"
+	"github.com/skeleton1231/skeleton/framework/gin/binding"
 )
 
 // EnvGinMode indicates environment name for gin mode.
@@ -35,8 +35,9 @@ const (
 // Note that both Logger and Recovery provides custom ways to configure their
 // output io.Writer.
 // To support coloring in Windows use:
-// 		import "github.com/mattn/go-colorable"
-// 		gin.DefaultWriter = colorable.NewColorableStdout()
+//
+//	import "github.com/mattn/go-colorable"
+//	gin.DefaultWriter = colorable.NewColorableStdout()
 var DefaultWriter io.Writer = os.Stdout
 
 // DefaultErrorWriter is the default io.Writer used by Gin to debug errors

@@ -11,7 +11,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/gin-gonic/gin/internal/bytesconv"
+	"github.com/skeleton1231/skeleton/framework/gin/internal/bytesconv"
 )
 
 var (

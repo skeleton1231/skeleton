@@ -14,7 +14,7 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/skeleton1231/skeleton/framework/gin"
 )
 
 func main() {
