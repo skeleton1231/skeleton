@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/skeleton1231/skeleton/framework"
 	"github.com/skeleton1231/skeleton/framework/gin/internal/bytesconv"
 	"github.com/skeleton1231/skeleton/framework/gin/render"
 	"golang.org/x/net/http2"
@@ -78,6 +79,8 @@ const (
 // Engine is the framework's instance, it contains the muxer, middleware and configuration settings.
 // Create an instance of Engine, by using New() or Default()
 type Engine struct {
+	container framework.Container
+
 	RouterGroup
 
 	// RedirectTrailingSlash enables automatic redirection if the current route can't be matched but a
@@ -200,6 +203,7 @@ func New() *Engine {
 		secureJSONPrefix:       "while(1);",
 		trustedProxies:         []string{"0.0.0.0/0", "::/0"},
 		trustedCIDRs:           defaultTrustedCIDRs,
+		container:              framework.NewHadeContainer(), // 这里注入了 container
 	}
 	engine.RouterGroup.engine = engine
 	engine.pool.New = func() any {
@@ -228,7 +232,7 @@ func (engine *Engine) Handler() http.Handler {
 func (engine *Engine) allocateContext() *Context {
 	v := make(Params, 0, engine.maxParams)
 	skippedNodes := make([]skippedNode, 0, engine.maxSections)
-	return &Context{engine: engine, params: &v, skippedNodes: &skippedNodes}
+	return &Context{engine: engine, params: &v, skippedNodes: &skippedNodes, container: engine.container} //add container
 }
 
 // Delims sets template left and right delims and returns an Engine instance.

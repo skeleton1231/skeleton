@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/gin-contrib/sse"
+	"github.com/skeleton1231/skeleton/framework"
 	"github.com/skeleton1231/skeleton/framework/gin/binding"
 	"github.com/skeleton1231/skeleton/framework/gin/render"
 )
@@ -49,6 +50,8 @@ const abortIndex int8 = math.MaxInt8 >> 1
 // Context is the most important part of gin. It allows us to pass variables between middleware,
 // manage the flow, validate the JSON of a request and render a JSON response for example.
 type Context struct {
+	container framework.Container //add container
+
 	writermem responseWriter
 	Request   *http.Request
 	Writer    ResponseWriter
