@@ -59,12 +59,14 @@ func (hade *HadeContainer) PrintProviders() []string {
 
 // Bind 将服务容器和关键字做了绑定
 func (hade *HadeContainer) Bind(provider ServiceProvider) error {
+	fmt.Println("HadeContainer:Bind")
 	hade.lock.Lock()
 	defer hade.lock.Unlock()
 	key := provider.Name()
 
 	hade.providers[key] = provider
-
+	fmt.Println(hade.PrintProviders())
+	fmt.Println("isdefer:", provider.IsDefer())
 	// if provider is not defer
 	if provider.IsDefer() == false {
 		if err := provider.Boot(hade); err != nil {
@@ -72,7 +74,9 @@ func (hade *HadeContainer) Bind(provider ServiceProvider) error {
 		}
 		// 实例化方法
 		params := provider.Params(hade)
+		fmt.Println("HadeContainer:Bind:params", params)
 		method := provider.Register(hade)
+		fmt.Println("HadeContainer:Bind:method", method)
 		instance, err := method(params...)
 		if err != nil {
 			return errors.New(err.Error())
@@ -83,6 +87,7 @@ func (hade *HadeContainer) Bind(provider ServiceProvider) error {
 }
 
 func (hade *HadeContainer) IsBind(key string) bool {
+	fmt.Println("HadeContainer:IsBind")
 	return hade.findServiceProvider(key) != nil
 }
 
@@ -129,6 +134,7 @@ func (hade *HadeContainer) newInstance(sp ServiceProvider, params []interface{})
 
 // 真正的实例化一个服务
 func (hade *HadeContainer) make(key string, params []interface{}, forceNew bool) (interface{}, error) {
+	fmt.Println("HadeContainer:make")
 	hade.lock.RLock()
 	defer hade.lock.RUnlock()
 	// 查询是否已经注册了这个服务提供者，如果没有注册，则返回错误

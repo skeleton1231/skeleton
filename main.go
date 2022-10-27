@@ -11,12 +11,16 @@ import (
 
 	"github.com/skeleton1231/skeleton/framework/gin"
 	"github.com/skeleton1231/skeleton/framework/middleware"
+	"github.com/skeleton1231/skeleton/provider/demo"
 )
 
 func main() {
 	//core := framework.NewCore()
 	core := gin.New()
 
+	//bind
+	core.Bind(&demo.DemoServiceProvider{})
+	//middleware
 	core.Use(gin.Recovery())
 	core.Use(middleware.Cost())
 
