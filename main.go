@@ -18,6 +18,8 @@ func main() {
 	//core := framework.NewCore()
 	core := gin.New()
 
+	//core.Bind(&app.HadeAppProvider{})
+
 	//bind
 	core.Bind(&demo.DemoServiceProvider{})
 	//middleware
