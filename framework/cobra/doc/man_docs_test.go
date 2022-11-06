@@ -1,17 +1,3 @@
-// Copyright 2013-2022 The Cobra Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package doc
 
 import (
@@ -34,7 +20,7 @@ func assertNoErr(t *testing.T, e error) {
 }
 
 func translate(in string) string {
-	return strings.ReplaceAll(in, "-", "\\-")
+	return strings.Replace(in, "-", "\\-", -1)
 }
 
 func TestGenManDoc(t *testing.T) {
@@ -52,7 +38,7 @@ func TestGenManDoc(t *testing.T) {
 
 	// Make sure parent has - in CommandPath() in SEE ALSO:
 	parentPath := echoCmd.Parent().CommandPath()
-	dashParentPath := strings.ReplaceAll(parentPath, " ", "-")
+	dashParentPath := strings.Replace(parentPath, " ", "-", -1)
 	expected := translate(dashParentPath)
 	expected = expected + "(" + header.Section + ")"
 	checkStringContains(t, output, expected)
@@ -87,7 +73,7 @@ func TestGenManNoHiddenParents(t *testing.T) {
 
 	// Make sure parent has - in CommandPath() in SEE ALSO:
 	parentPath := echoCmd.Parent().CommandPath()
-	dashParentPath := strings.ReplaceAll(parentPath, " ", "-")
+	dashParentPath := strings.Replace(parentPath, " ", "-", -1)
 	expected := translate(dashParentPath)
 	expected = expected + "(" + header.Section + ")"
 	checkStringContains(t, output, expected)

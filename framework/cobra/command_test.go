@@ -1,17 +1,3 @@
-// Copyright 2013-2022 The Cobra Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cobra
 
 import (
@@ -328,7 +314,7 @@ func TestEnablePrefixMatching(t *testing.T) {
 		t.Errorf("aCmdArgs expected: %q, got: %q", onetwo, got)
 	}
 
-	EnablePrefixMatching = defaultPrefixMatching
+	EnablePrefixMatching = false
 }
 
 func TestAliasPrefixMatching(t *testing.T) {
@@ -363,7 +349,7 @@ func TestAliasPrefixMatching(t *testing.T) {
 		t.Errorf("timesCmdArgs expected: %v, got: %v", onetwo, got)
 	}
 
-	EnablePrefixMatching = defaultPrefixMatching
+	EnablePrefixMatching = false
 }
 
 // TestChildSameName checks the correct behaviour of cobra in cases,
@@ -721,7 +707,10 @@ func TestEmptyInputs(t *testing.T) {
 	}
 }
 
-func TestChildFlagShadowsParentPersistentFlag(t *testing.T) {
+func TestOverwrittenFlag(t *testing.T) {
+	// TODO: This test fails, but should work.
+	t.Skip()
+
 	parent := &Command{Use: "parent", Run: emptyRun}
 	child := &Command{Use: "child", Run: emptyRun}
 
@@ -743,7 +732,7 @@ func TestChildFlagShadowsParentPersistentFlag(t *testing.T) {
 	}
 
 	if childInherited.Lookup("intf") != nil {
-		t.Errorf(`InheritedFlags should not contain shadowed flag "intf"`)
+		t.Errorf(`InheritedFlags should not contain overwritten flag "intf"`)
 	}
 	if childLocal.Lookup("intf") == nil {
 		t.Error(`LocalFlags expected to contain "intf", got "nil"`)
@@ -896,38 +885,6 @@ func TestHelpCommandExecutedOnChild(t *testing.T) {
 	}
 
 	checkStringContains(t, output, childCmd.Long)
-}
-
-func TestHelpCommandExecutedOnChildWithFlagThatShadowsParentFlag(t *testing.T) {
-	parent := &Command{Use: "parent", Run: emptyRun}
-	child := &Command{Use: "child", Run: emptyRun}
-	parent.AddCommand(child)
-
-	parent.PersistentFlags().Bool("foo", false, "parent foo usage")
-	parent.PersistentFlags().Bool("bar", false, "parent bar usage")
-	child.Flags().Bool("foo", false, "child foo usage") // This shadows parent's foo flag
-	child.Flags().Bool("baz", false, "child baz usage")
-
-	got, err := executeCommand(parent, "help", "child")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	expected := `Usage:
-  parent child [flags]
-
-Flags:
-      --baz    child baz usage
-      --foo    child foo usage
-  -h, --help   help for child
-
-Global Flags:
-      --bar   parent bar usage
-`
-
-	if got != expected {
-		t.Errorf("Help text mismatch.\nExpected:\n%s\n\nGot:\n%s\n", expected, got)
-	}
 }
 
 func TestSetHelpCommand(t *testing.T) {
@@ -1277,113 +1234,6 @@ func TestSuggestions(t *testing.T) {
 	}
 }
 
-func TestCaseInsensitive(t *testing.T) {
-	rootCmd := &Command{Use: "root", Run: emptyRun}
-	childCmd := &Command{Use: "child", Run: emptyRun, Aliases: []string{"alternative"}}
-	granchildCmd := &Command{Use: "GRANDCHILD", Run: emptyRun, Aliases: []string{"ALIAS"}}
-
-	childCmd.AddCommand(granchildCmd)
-	rootCmd.AddCommand(childCmd)
-
-	tests := []struct {
-		args                []string
-		failWithoutEnabling bool
-	}{
-		{
-			args:                []string{"child"},
-			failWithoutEnabling: false,
-		},
-		{
-			args:                []string{"CHILD"},
-			failWithoutEnabling: true,
-		},
-		{
-			args:                []string{"chILD"},
-			failWithoutEnabling: true,
-		},
-		{
-			args:                []string{"CHIld"},
-			failWithoutEnabling: true,
-		},
-		{
-			args:                []string{"alternative"},
-			failWithoutEnabling: false,
-		},
-		{
-			args:                []string{"ALTERNATIVE"},
-			failWithoutEnabling: true,
-		},
-		{
-			args:                []string{"ALTernatIVE"},
-			failWithoutEnabling: true,
-		},
-		{
-			args:                []string{"alternatiVE"},
-			failWithoutEnabling: true,
-		},
-		{
-			args:                []string{"child", "GRANDCHILD"},
-			failWithoutEnabling: false,
-		},
-		{
-			args:                []string{"child", "grandchild"},
-			failWithoutEnabling: true,
-		},
-		{
-			args:                []string{"CHIld", "GRANdchild"},
-			failWithoutEnabling: true,
-		},
-		{
-			args:                []string{"alternative", "ALIAS"},
-			failWithoutEnabling: false,
-		},
-		{
-			args:                []string{"alternative", "alias"},
-			failWithoutEnabling: true,
-		},
-		{
-			args:                []string{"CHILD", "alias"},
-			failWithoutEnabling: true,
-		},
-		{
-			args:                []string{"CHIld", "aliAS"},
-			failWithoutEnabling: true,
-		},
-	}
-
-	for _, test := range tests {
-		for _, enableCaseInsensitivity := range []bool{true, false} {
-			EnableCaseInsensitive = enableCaseInsensitivity
-
-			output, err := executeCommand(rootCmd, test.args...)
-			expectedFailure := test.failWithoutEnabling && !enableCaseInsensitivity
-
-			if !expectedFailure && output != "" {
-				t.Errorf("Unexpected output: %v", output)
-			}
-			if !expectedFailure && err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-		}
-	}
-
-	EnableCaseInsensitive = defaultCaseInsensitive
-}
-
-// This test make sure we keep backwards-compatibility with respect
-// to command names case sensitivity behavior.
-func TestCaseSensitivityBackwardCompatibility(t *testing.T) {
-	rootCmd := &Command{Use: "root", Run: emptyRun}
-	childCmd := &Command{Use: "child", Run: emptyRun}
-
-	rootCmd.AddCommand(childCmd)
-	_, err := executeCommand(rootCmd, strings.ToUpper(childCmd.Use))
-	if err == nil {
-		t.Error("Expected error on calling a command in upper case while command names are case sensitive. Got nil.")
-	}
-
-}
-
 func TestRemoveCommand(t *testing.T) {
 	rootCmd := &Command{Use: "root", Args: NoArgs, Run: emptyRun}
 	childCmd := &Command{Use: "child", Run: emptyRun}
@@ -1564,16 +1414,16 @@ func TestPersistentHooks(t *testing.T) {
 		name string
 		got  string
 	}{
-		// TODO: currently PersistentPreRun* defined in parent does not
-		// run if the matching child subcommand has PersistentPreRun.
+		// TODO: currently PersistenPreRun* defined in parent does not
+		// run if the matchin child subcommand has PersistenPreRun.
 		// If the behavior changes (https://github.com/spf13/cobra/issues/252)
 		// this test must be fixed.
 		{"parentPersPreArgs", parentPersPreArgs},
 		{"parentPreArgs", parentPreArgs},
 		{"parentRunArgs", parentRunArgs},
 		{"parentPostArgs", parentPostArgs},
-		// TODO: currently PersistentPostRun* defined in parent does not
-		// run if the matching child subcommand has PersistentPostRun.
+		// TODO: currently PersistenPostRun* defined in parent does not
+		// run if the matchin child subcommand has PersistenPostRun.
 		// If the behavior changes (https://github.com/spf13/cobra/issues/252)
 		// this test must be fixed.
 		{"parentPersPostArgs", parentPersPostArgs},
@@ -1743,7 +1593,7 @@ func TestCommandsAreSorted(t *testing.T) {
 		}
 	}
 
-	EnableCommandSorting = defaultCommandSorting
+	EnableCommandSorting = true
 }
 
 func TestEnableCommandSortingIsDisabled(t *testing.T) {
@@ -1764,180 +1614,7 @@ func TestEnableCommandSortingIsDisabled(t *testing.T) {
 		}
 	}
 
-	EnableCommandSorting = defaultCommandSorting
-}
-
-func TestUsageWithGroup(t *testing.T) {
-	var rootCmd = &Command{Use: "root", Short: "test", Run: emptyRun}
-	rootCmd.CompletionOptions.DisableDefaultCmd = true
-
-	rootCmd.AddGroup(&Group{ID: "group1", Title: "group1"})
-	rootCmd.AddGroup(&Group{ID: "group2", Title: "group2"})
-
-	rootCmd.AddCommand(&Command{Use: "cmd1", GroupID: "group1", Run: emptyRun})
-	rootCmd.AddCommand(&Command{Use: "cmd2", GroupID: "group2", Run: emptyRun})
-
-	output, err := executeCommand(rootCmd, "--help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	// help should be ungrouped here
-	checkStringContains(t, output, "\nAdditional Commands:\n  help")
-	checkStringContains(t, output, "\ngroup1\n  cmd1")
-	checkStringContains(t, output, "\ngroup2\n  cmd2")
-}
-
-func TestUsageHelpGroup(t *testing.T) {
-	var rootCmd = &Command{Use: "root", Short: "test", Run: emptyRun}
-	rootCmd.CompletionOptions.DisableDefaultCmd = true
-
-	rootCmd.AddGroup(&Group{ID: "group", Title: "group"})
-	rootCmd.AddCommand(&Command{Use: "xxx", GroupID: "group", Run: emptyRun})
-	rootCmd.SetHelpCommandGroupID("group")
-
-	output, err := executeCommand(rootCmd, "--help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	// now help should be grouped under "group"
-	checkStringOmits(t, output, "\nAdditional Commands:\n  help")
-	checkStringContains(t, output, "\ngroup\n  help")
-}
-
-func TestUsageCompletionGroup(t *testing.T) {
-	var rootCmd = &Command{Use: "root", Short: "test", Run: emptyRun}
-
-	rootCmd.AddGroup(&Group{ID: "group", Title: "group"})
-	rootCmd.AddGroup(&Group{ID: "help", Title: "help"})
-
-	rootCmd.AddCommand(&Command{Use: "xxx", GroupID: "group", Run: emptyRun})
-	rootCmd.SetHelpCommandGroupID("help")
-	rootCmd.SetCompletionCommandGroupID("group")
-
-	output, err := executeCommand(rootCmd, "--help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	// now completion should be grouped under "group"
-	checkStringOmits(t, output, "\nAdditional Commands:\n  completion")
-	checkStringContains(t, output, "\ngroup\n  completion")
-}
-
-func TestUngroupedCommand(t *testing.T) {
-	var rootCmd = &Command{Use: "root", Short: "test", Run: emptyRun}
-
-	rootCmd.AddGroup(&Group{ID: "group", Title: "group"})
-	rootCmd.AddGroup(&Group{ID: "help", Title: "help"})
-
-	rootCmd.AddCommand(&Command{Use: "xxx", GroupID: "group", Run: emptyRun})
-	rootCmd.SetHelpCommandGroupID("help")
-	rootCmd.SetCompletionCommandGroupID("group")
-
-	// Add a command without a group
-	rootCmd.AddCommand(&Command{Use: "yyy", Run: emptyRun})
-
-	output, err := executeCommand(rootCmd, "--help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	// The yyy command should be in the additional command "group"
-	checkStringContains(t, output, "\nAdditional Commands:\n  yyy")
-}
-
-func TestAddGroup(t *testing.T) {
-	var rootCmd = &Command{Use: "root", Short: "test", Run: emptyRun}
-
-	rootCmd.AddGroup(&Group{ID: "group", Title: "Test group"})
-	rootCmd.AddCommand(&Command{Use: "cmd", GroupID: "group", Run: emptyRun})
-
-	output, err := executeCommand(rootCmd, "--help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	checkStringContains(t, output, "\nTest group\n  cmd")
-}
-
-func TestWrongGroupFirstLevel(t *testing.T) {
-	var rootCmd = &Command{Use: "root", Short: "test", Run: emptyRun}
-
-	rootCmd.AddGroup(&Group{ID: "group", Title: "Test group"})
-	// Use the wrong group ID
-	rootCmd.AddCommand(&Command{Use: "cmd", GroupID: "wrong", Run: emptyRun})
-
-	defer func() {
-		if recover() == nil {
-			t.Errorf("The code should have panicked due to a missing group")
-		}
-	}()
-	_, err := executeCommand(rootCmd, "--help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-}
-
-func TestWrongGroupNestedLevel(t *testing.T) {
-	var rootCmd = &Command{Use: "root", Short: "test", Run: emptyRun}
-	var childCmd = &Command{Use: "child", Run: emptyRun}
-	rootCmd.AddCommand(childCmd)
-
-	childCmd.AddGroup(&Group{ID: "group", Title: "Test group"})
-	// Use the wrong group ID
-	childCmd.AddCommand(&Command{Use: "cmd", GroupID: "wrong", Run: emptyRun})
-
-	defer func() {
-		if recover() == nil {
-			t.Errorf("The code should have panicked due to a missing group")
-		}
-	}()
-	_, err := executeCommand(rootCmd, "child", "--help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-}
-
-func TestWrongGroupForHelp(t *testing.T) {
-	var rootCmd = &Command{Use: "root", Short: "test", Run: emptyRun}
-	var childCmd = &Command{Use: "child", Run: emptyRun}
-	rootCmd.AddCommand(childCmd)
-
-	rootCmd.AddGroup(&Group{ID: "group", Title: "Test group"})
-	// Use the wrong group ID
-	rootCmd.SetHelpCommandGroupID("wrong")
-
-	defer func() {
-		if recover() == nil {
-			t.Errorf("The code should have panicked due to a missing group")
-		}
-	}()
-	_, err := executeCommand(rootCmd, "--help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-}
-
-func TestWrongGroupForCompletion(t *testing.T) {
-	var rootCmd = &Command{Use: "root", Short: "test", Run: emptyRun}
-	var childCmd = &Command{Use: "child", Run: emptyRun}
-	rootCmd.AddCommand(childCmd)
-
-	rootCmd.AddGroup(&Group{ID: "group", Title: "Test group"})
-	// Use the wrong group ID
-	rootCmd.SetCompletionCommandGroupID("wrong")
-
-	defer func() {
-		if recover() == nil {
-			t.Errorf("The code should have panicked due to a missing group")
-		}
-	}()
-	_, err := executeCommand(rootCmd, "--help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
+	EnableCommandSorting = true
 }
 
 func TestSetOutput(t *testing.T) {
@@ -2043,38 +1720,6 @@ func TestFlagErrorFunc(t *testing.T) {
 	expected := fmt.Sprintf(expectedFmt, "unknown flag: --unknown-flag")
 	if got != expected {
 		t.Errorf("Expected %v, got %v", expected, got)
-	}
-}
-
-func TestFlagErrorFuncHelp(t *testing.T) {
-	c := &Command{Use: "c", Run: emptyRun}
-	c.PersistentFlags().Bool("help", false, "help for c")
-	c.SetFlagErrorFunc(func(_ *Command, err error) error {
-		return fmt.Errorf("wrap error: %w", err)
-	})
-
-	out, err := executeCommand(c, "--help")
-	if err != nil {
-		t.Errorf("--help should not fail: %v", err)
-	}
-
-	expected := `Usage:
-  c [flags]
-
-Flags:
-      --help   help for c
-`
-	if out != expected {
-		t.Errorf("Expected: %v, got: %v", expected, out)
-	}
-
-	out, err = executeCommand(c, "-h")
-	if err != nil {
-		t.Errorf("-h should not fail: %v", err)
-	}
-
-	if out != expected {
-		t.Errorf("Expected: %v, got: %v", expected, out)
 	}
 }
 
@@ -2412,194 +2057,4 @@ func TestFParseErrWhitelistSiblingCommand(t *testing.T) {
 		t.Error("expected unknown flag error")
 	}
 	checkStringContains(t, output, "unknown flag: --unknown")
-}
-
-func TestSetContext(t *testing.T) {
-	type key struct{}
-	val := "foobar"
-	root := &Command{
-		Use: "root",
-		Run: func(cmd *Command, args []string) {
-			key := cmd.Context().Value(key{})
-			got, ok := key.(string)
-			if !ok {
-				t.Error("key not found in context")
-			}
-			if got != val {
-				t.Errorf("Expected value: \n %v\nGot:\n %v\n", val, got)
-			}
-		},
-	}
-
-	ctx := context.WithValue(context.Background(), key{}, val)
-	root.SetContext(ctx)
-	err := root.Execute()
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func TestSetContextPreRun(t *testing.T) {
-	type key struct{}
-	val := "barr"
-	root := &Command{
-		Use: "root",
-		PreRun: func(cmd *Command, args []string) {
-			ctx := context.WithValue(cmd.Context(), key{}, val)
-			cmd.SetContext(ctx)
-		},
-		Run: func(cmd *Command, args []string) {
-			val := cmd.Context().Value(key{})
-			got, ok := val.(string)
-			if !ok {
-				t.Error("key not found in context")
-			}
-			if got != val {
-				t.Errorf("Expected value: \n %v\nGot:\n %v\n", val, got)
-			}
-		},
-	}
-	err := root.Execute()
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func TestSetContextPreRunOverwrite(t *testing.T) {
-	type key struct{}
-	val := "blah"
-	root := &Command{
-		Use: "root",
-		Run: func(cmd *Command, args []string) {
-			key := cmd.Context().Value(key{})
-			_, ok := key.(string)
-			if ok {
-				t.Error("key found in context when not expected")
-			}
-		},
-	}
-	ctx := context.WithValue(context.Background(), key{}, val)
-	root.SetContext(ctx)
-	err := root.ExecuteContext(context.Background())
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func TestSetContextPersistentPreRun(t *testing.T) {
-	type key struct{}
-	val := "barbar"
-	root := &Command{
-		Use: "root",
-		PersistentPreRun: func(cmd *Command, args []string) {
-			ctx := context.WithValue(cmd.Context(), key{}, val)
-			cmd.SetContext(ctx)
-		},
-	}
-	child := &Command{
-		Use: "child",
-		Run: func(cmd *Command, args []string) {
-			key := cmd.Context().Value(key{})
-			got, ok := key.(string)
-			if !ok {
-				t.Error("key not found in context")
-			}
-			if got != val {
-				t.Errorf("Expected value: \n %v\nGot:\n %v\n", val, got)
-			}
-		},
-	}
-	root.AddCommand(child)
-	root.SetArgs([]string{"child"})
-	err := root.Execute()
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-const VersionFlag = "--version"
-const HelpFlag = "--help"
-
-func TestNoRootRunCommandExecutedWithVersionSet(t *testing.T) {
-	rootCmd := &Command{Use: "root", Version: "1.0.0", Long: "Long description"}
-	rootCmd.AddCommand(&Command{Use: "child", Run: emptyRun})
-
-	output, err := executeCommand(rootCmd)
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	checkStringContains(t, output, rootCmd.Long)
-	checkStringContains(t, output, HelpFlag)
-	checkStringContains(t, output, VersionFlag)
-}
-
-func TestNoRootRunCommandExecutedWithoutVersionSet(t *testing.T) {
-	rootCmd := &Command{Use: "root", Long: "Long description"}
-	rootCmd.AddCommand(&Command{Use: "child", Run: emptyRun})
-
-	output, err := executeCommand(rootCmd)
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	checkStringContains(t, output, rootCmd.Long)
-	checkStringContains(t, output, HelpFlag)
-	checkStringOmits(t, output, VersionFlag)
-}
-
-func TestHelpCommandExecutedWithVersionSet(t *testing.T) {
-	rootCmd := &Command{Use: "root", Version: "1.0.0", Long: "Long description", Run: emptyRun}
-	rootCmd.AddCommand(&Command{Use: "child", Run: emptyRun})
-
-	output, err := executeCommand(rootCmd, "help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	checkStringContains(t, output, rootCmd.Long)
-	checkStringContains(t, output, HelpFlag)
-	checkStringContains(t, output, VersionFlag)
-}
-
-func TestHelpCommandExecutedWithoutVersionSet(t *testing.T) {
-	rootCmd := &Command{Use: "root", Long: "Long description", Run: emptyRun}
-	rootCmd.AddCommand(&Command{Use: "child", Run: emptyRun})
-
-	output, err := executeCommand(rootCmd, "help")
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	checkStringContains(t, output, rootCmd.Long)
-	checkStringContains(t, output, HelpFlag)
-	checkStringOmits(t, output, VersionFlag)
-}
-
-func TestHelpflagCommandExecutedWithVersionSet(t *testing.T) {
-	rootCmd := &Command{Use: "root", Version: "1.0.0", Long: "Long description", Run: emptyRun}
-	rootCmd.AddCommand(&Command{Use: "child", Run: emptyRun})
-
-	output, err := executeCommand(rootCmd, HelpFlag)
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	checkStringContains(t, output, rootCmd.Long)
-	checkStringContains(t, output, HelpFlag)
-	checkStringContains(t, output, VersionFlag)
-}
-
-func TestHelpflagCommandExecutedWithoutVersionSet(t *testing.T) {
-	rootCmd := &Command{Use: "root", Long: "Long description", Run: emptyRun}
-	rootCmd.AddCommand(&Command{Use: "child", Run: emptyRun})
-
-	output, err := executeCommand(rootCmd, HelpFlag)
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-
-	checkStringContains(t, output, rootCmd.Long)
-	checkStringContains(t, output, HelpFlag)
-	checkStringOmits(t, output, VersionFlag)
 }
