@@ -16,6 +16,7 @@ import (
 )
 
 func TestBindingMsgPack(t *testing.T) {
+
 	test := FooStruct{
 		Foo: "bar",
 	}
