@@ -1,7 +1,6 @@
 package console
 
 import (
-	"github.com/skeleton1231/skeleton/app/console/demo"
 	"github.com/skeleton1231/skeleton/framework"
 	"github.com/skeleton1231/skeleton/framework/cobra"
 	"github.com/skeleton1231/skeleton/framework/command"
@@ -40,5 +39,11 @@ func RunCommand(container framework.Container) error {
 // 绑定业务的命令
 func AddAppCommand(rootCmd *cobra.Command) {
 	//  demo 例子
-	rootCmd.AddCommand(demo.InitFoo())
+	//rootCmd.AddCommand(demo.InitFoo())
+
+	// 每秒调用一次Foo命令
+	//rootCmd.AddCronCommand("* * * * * *", demo.FooCommand)
+
+	// 启动一个分布式任务调度，调度的服务名称为init_func_for_test，每个节点每5s调用一次Foo命令，抢占到了调度任务的节点将抢占锁持续挂载2s才释放
+	//rootCmd.AddDistributedCronCommand("foo_func_for_test", "*/5 * * * * *", demo.FooCommand, 2*time.Second)
 }
