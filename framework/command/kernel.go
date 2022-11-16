@@ -10,7 +10,7 @@ func AddKernelCommands(root *cobra.Command) {
 	//root.AddCommand(deployCommand)
 	//
 	//// cron
-	//root.AddCommand(initCronCommand())
+	root.AddCommand(initCronCommand())
 	//// cmd
 	//cmdCommand.AddCommand(cmdListCommand)
 	//cmdCommand.AddCommand(cmdCreateCommand)

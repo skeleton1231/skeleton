@@ -1,9 +1,9 @@
 package app
 
 import (
-	"flag"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
 	"github.com/skeleton1231/skeleton/framework"
@@ -29,12 +29,12 @@ func (h HadeApp) BaseFolder() string {
 	}
 
 	// 如果没有设置，则使用参数
-	var baseFolder string
+	/*var baseFolder string
 	flag.StringVar(&baseFolder, "base_folder", "", "base_folder参数, 默认为当前路径")
 	flag.Parse()
 	if baseFolder != "" {
 		return baseFolder
-	}
+	}*/
 
 	// 如果参数也没有，使用默认的当前路径
 	return util.GetExecDirectory()
@@ -96,7 +96,8 @@ func NewHadeApp(params ...interface{}) (interface{}, error) {
 	// 有两个参数，一个是容器，一个是baseFolder
 	container := params[0].(framework.Container)
 	baseFolder := params[1].(string)
-	return &HadeApp{baseFolder: baseFolder, container: container}, nil
+	appId := uuid.New().String()
+	return &HadeApp{baseFolder: baseFolder, container: container, appId: appId}, nil
 }
 
 // AppID 表示这个App的唯一ID
