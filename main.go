@@ -12,7 +12,7 @@ import (
 func main() {
 	// 初始化服务容器
 	container := framework.NewHadeContainer()
-	// 绑定App服务提供者
+	// 绑定App服务提供者x
 	container.Bind(&app.HadeAppProvider{})
 	// 后续初始化需要绑定的服务提供者...
 	container.Bind(&distributed.LocalDistributedProvider{})
