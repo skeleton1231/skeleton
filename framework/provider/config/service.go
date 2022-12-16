@@ -8,7 +8,9 @@ import (
 	"sync"
 
 	"github.com/skeleton1231/skeleton/framework"
+	"github.com/skeleton1231/skeleton/framework/contract"
 	"github.com/spf13/cast"
+	"gopkg.in/yaml.v2"
 )
 
 // HadeConfig
@@ -18,7 +20,7 @@ type HadeConfig struct {
 	keyDelim string                 // path delimeter, default:"."
 	lock     sync.Mutex             // config read&write lock
 	envMaps  map[string]string      //all env args
-	confMpas map[string]interface{} // config file struct, key as file name
+	confMaps map[string]interface{} // config file struct, key as file name
 	confRaws map[string][]byte      // config file raw data
 }
 
@@ -39,8 +41,23 @@ func (conf *HadeConfig) loadConfigFile(folder string, file string) error {
 		}
 		// replace the env args in text
 		bf = replace(bf, conf.envMaps)
+		// unmarshal file
+		c := map[string]interface{}{}
+		if err := yaml.Unmarshal(bf, &c); err != nil {
+			return err
+		}
+		conf.confMaps[name] = c
+		conf.confRaws[name] = bf
 
+		// rear app.path data and update the relevant file
+		if name == "app" && conf.c.IsBind(contract.AppKey) {
+			if p, ok := c["path"]; ok {
+				appService := conf.c.MustMake(contract.AppKey).(contract.App)
+				appService.LoadAppConfig(cast.ToStringMapString(p))
+			}
+		}
 	}
+	return nil
 }
 
 // replace: use envMaps to replace context env(xxx) args
@@ -81,4 +98,11 @@ func searchMap(source map[string]interface{}, path []string) interface{} {
 		}
 	}
 	return nil
+}
+
+// get config item through path
+func (conf *HadeConfig) find(key string) interface{} {
+	conf.lock.Lock()
+	defer conf.lock.Unlock()
+	return searchMap(conf.confMaps, strings.Split(key, conf.keyDelim))
 }
