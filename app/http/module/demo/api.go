@@ -2,6 +2,7 @@ package demo
 
 import (
 	demoService "github.com/skeleton1231/skeleton/app/provider/demo"
+	"github.com/skeleton1231/skeleton/framework/contract"
 	"github.com/skeleton1231/skeleton/framework/gin"
 )
 
@@ -15,6 +16,7 @@ func Register(r *gin.Engine) error {
 
 	r.GET("/demo/demo", api.Demo)
 	r.GET("/demo/demo2", api.Demo2)
+	r.GET("/demo/demo3", api.Demo3)
 	r.POST("/demo/demo_post", api.DemoPost)
 	return nil
 }
@@ -37,6 +39,14 @@ func (api *DemoApi) Demo(c *gin.Context) {
 	users := api.service.GetUsers()
 	usersDTO := UserModelsToUserDTOs(users)
 	c.JSON(200, usersDTO)
+}
+
+func (api *DemoApi) Demo3(c *gin.Context) {
+	// 获取password
+	configService := c.MustMake(contract.ConfigKey).(contract.Config)
+	password := configService.GetString("database.mysql.password")
+	// 打印出来
+	c.JSON(200, password)
 }
 
 // Demo godoc

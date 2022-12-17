@@ -14,9 +14,8 @@ import (
 
 // HadeEnv 是 Env 的具体实现
 type HadeEnv struct {
-	folder string // 代表.env所在的目录
-
-	maps map[string]string
+	folder string            // 代表.env所在的目录
+	maps   map[string]string // 保存所有的环境变量
 }
 
 // NewHadeEnv 有一个参数，.env文件所在的目录
@@ -30,7 +29,7 @@ func NewHadeEnv(params ...interface{}) (interface{}, error) {
 	// 读取folder文件
 	folder := params[0].(string)
 
-	//实例化
+	// 实例化
 	hadeEnv := &HadeEnv{
 		folder: folder,
 		// 实例化环境变量，APP_ENV默认设置为开发环境
@@ -46,7 +45,7 @@ func NewHadeEnv(params ...interface{}) (interface{}, error) {
 	if err == nil {
 		defer fi.Close()
 
-		//读取文件
+		// 读取文件
 		br := bufio.NewReader(fi)
 		for {
 			// 按照行进行读取
@@ -62,11 +61,11 @@ func NewHadeEnv(params ...interface{}) (interface{}, error) {
 			}
 			// 保存map
 			key := string(s[0])
-			value := string(s[1])
-			hadeEnv.maps[key] = value
+			val := string(s[1])
+			hadeEnv.maps[key] = val
 		}
-
 	}
+
 	// 获取当前程序的环境变量，并且覆盖.env文件下的变量
 	for _, e := range os.Environ() {
 		pair := strings.SplitN(e, "=", 2)
@@ -75,13 +74,14 @@ func NewHadeEnv(params ...interface{}) (interface{}, error) {
 		}
 		hadeEnv.maps[pair[0]] = pair[1]
 	}
-	// return instance
+
+	// 返回实例
 	return hadeEnv, nil
 }
 
 // AppEnv 获取表示当前APP环境的变量APP_ENV
 func (en *HadeEnv) AppEnv() string {
-	return en.Get("App_Env")
+	return en.Get("APP_ENV")
 }
 
 // IsExist 判断一个环境变量是否有被设置
@@ -98,6 +98,7 @@ func (en *HadeEnv) Get(key string) string {
 	return ""
 }
 
+// All 获取所有的环境变量，.env和运行环境变量融合后结果
 func (en *HadeEnv) All() map[string]string {
 	return en.maps
 }

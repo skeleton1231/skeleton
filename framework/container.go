@@ -60,22 +60,19 @@ func (hade *HadeContainer) PrintProviders() []string {
 // Bind 将服务容器和关键字做了绑定
 func (hade *HadeContainer) Bind(provider ServiceProvider) error {
 	hade.lock.Lock()
-	defer hade.lock.Unlock()
 	key := provider.Name()
 
 	hade.providers[key] = provider
-	//fmt.Println(hade.PrintProviders())
-	//fmt.Println("isdefer:", provider.IsDefer())
+	hade.lock.Unlock()
+
 	// if provider is not defer
-	if !provider.IsDefer() {
+	if provider.IsDefer() == false {
 		if err := provider.Boot(hade); err != nil {
 			return err
 		}
 		// 实例化方法
 		params := provider.Params(hade)
-		//fmt.Println("HadeContainer:Bind:params", params)
 		method := provider.Register(hade)
-		//fmt.Println("HadeContainer:Bind:method", method)
 		instance, err := method(params...)
 		if err != nil {
 			return errors.New(err.Error())
@@ -86,7 +83,6 @@ func (hade *HadeContainer) Bind(provider ServiceProvider) error {
 }
 
 func (hade *HadeContainer) IsBind(key string) bool {
-	fmt.Println("HadeContainer:IsBind")
 	return hade.findServiceProvider(key) != nil
 }
 
@@ -106,7 +102,8 @@ func (hade *HadeContainer) Make(key string) (interface{}, error) {
 func (hade *HadeContainer) MustMake(key string) interface{} {
 	serv, err := hade.make(key, nil, false)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		panic("container not contain key " + key)
 	}
 	return serv
 }
@@ -133,27 +130,30 @@ func (hade *HadeContainer) newInstance(sp ServiceProvider, params []interface{})
 
 // 真正的实例化一个服务
 func (hade *HadeContainer) make(key string, params []interface{}, forceNew bool) (interface{}, error) {
-	//fmt.Println("HadeContainer:make")
 	hade.lock.RLock()
 	defer hade.lock.RUnlock()
 	// 查询是否已经注册了这个服务提供者，如果没有注册，则返回错误
 	sp := hade.findServiceProvider(key)
 	if sp == nil {
+		fmt.Println("0000001")
 		return nil, errors.New("contract " + key + " have not register")
 	}
 
 	if forceNew {
+		fmt.Println("0000002")
 		return hade.newInstance(sp, params)
 	}
 
 	// 不需要强制重新实例化，如果容器中已经实例化了，那么就直接使用容器中的实例
 	if ins, ok := hade.instances[key]; ok {
+		fmt.Println("0000003")
 		return ins, nil
 	}
 
 	// 容器中还未实例化，则进行一次实例化
 	inst, err := hade.newInstance(sp, nil)
 	if err != nil {
+		fmt.Println("0000004")
 		return nil, err
 	}
 
