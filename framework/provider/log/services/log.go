@@ -4,7 +4,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/marmotedu/component-base/pkg/time"
+	"time"
+
 	"github.com/skeleton1231/skeleton/framework"
 	"github.com/skeleton1231/skeleton/framework/contract"
 	"github.com/skeleton1231/skeleton/framework/provider/log/formatter"
@@ -63,4 +64,59 @@ func (log *HadeLog) logf(level contract.LogLevel, ctx context.Context, msg strin
 	log.output.Write(ct)
 	log.output.Write([]byte("\r\n"))
 	return nil
+}
+
+// SetOutput 设置output
+func (log *HadeLog) SetOutput(output io.Writer) {
+	log.output = output
+}
+
+// Panic will add panic record which contains msg and fields
+func (log *HadeLog) Panic(ctx context.Context, msg string, fields map[string]interface{}) {
+	log.logf(contract.PanicLevel, ctx, msg, fields)
+}
+
+// Fatal will add fatal record which contains msg and fields
+func (log *HadeLog) Fatal(ctx context.Context, msg string, fields map[string]interface{}) {
+	log.logf(contract.FatalLevel, ctx, msg, fields)
+}
+
+// Error will add error record which contains msg and fields
+func (log *HadeLog) Error(ctx context.Context, msg string, fields map[string]interface{}) {
+	log.logf(contract.ErrorLevel, ctx, msg, fields)
+}
+
+// Warn will add warn record which contains msg and fields
+func (log *HadeLog) Warn(ctx context.Context, msg string, fields map[string]interface{}) {
+	log.logf(contract.WarnLevel, ctx, msg, fields)
+}
+
+// Info 会打印出普通的日志信息
+func (log *HadeLog) Info(ctx context.Context, msg string, fields map[string]interface{}) {
+	log.logf(contract.InfoLevel, ctx, msg, fields)
+}
+
+// Debug will add debug record which contains msg and fields
+func (log *HadeLog) Debug(ctx context.Context, msg string, fields map[string]interface{}) {
+	log.logf(contract.DebugLevel, ctx, msg, fields)
+}
+
+// Trace will add trace info which contains msg and fields
+func (log *HadeLog) Trace(ctx context.Context, msg string, fields map[string]interface{}) {
+	log.logf(contract.TraceLevel, ctx, msg, fields)
+}
+
+// SetLevel set log level, and higher level will be recorded
+func (log *HadeLog) SetLevel(level contract.LogLevel) {
+	log.level = level
+}
+
+// SetCxtFielder will get fields from context
+func (log *HadeLog) SetCtxFielder(handler contract.CtxFielder) {
+	log.ctxFielder = handler
+}
+
+// SetFormatter will set formatter handler will covert data to string for recording
+func (log *HadeLog) SetFormatter(formatter contract.Formatter) {
+	log.formatter = formatter
 }
