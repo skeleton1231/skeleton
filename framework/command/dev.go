@@ -64,7 +64,7 @@ func initDevConfig(c framework.Container) *devConfig {
 	monitorFolder := configer.GetString("app.dev.backend.monitor_folder")
 	if monitorFolder == "" {
 		appService := c.MustMake(contract.AppKey).(contract.App)
-		devConfig.Backend.MonitorFolder = appService.AppFolder()
+		devConfig.Backend.MonitorFolder = appService.BaseFolder()
 	}
 
 	if configer.IsExist("app.dev.frontend.port") {
