@@ -29,13 +29,13 @@ var buildCommand = &cobra.Command{
 
 var buildSelfCommand = &cobra.Command{
 	Use:   "Self",
-	Short: "编译hade命令",
+	Short: "编译skeleton命令",
 	RunE: func(c *cobra.Command, args []string) error {
 		path, err := exec.LookPath("go")
 		if err != nil {
 			log.Fatalln("hade go: please install go in path first")
 		}
-		cmd := exec.Command(path, "build", "-o", "hade", "./")
+		cmd := exec.Command(path, "build", "-o", "skeleton", "./")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println("go build error:")
@@ -43,7 +43,7 @@ var buildSelfCommand = &cobra.Command{
 			fmt.Println("--------------")
 			return err
 		}
-		fmt.Println("build success please run ./hade direct")
+		fmt.Println("build success please run ./skeleton direct")
 		return nil
 	},
 }
