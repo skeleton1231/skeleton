@@ -9,6 +9,7 @@ type App interface {
 	AppID() string
 	// Version 定义当前版本
 	Version() string
+
 	//BaseFolder 定义项目基础地址
 	BaseFolder() string
 	// ConfigFolder 定义了配置文件的路径
@@ -26,6 +27,8 @@ type App interface {
 	// TestFolder 存放测试所需要的信息
 	TestFolder() string
 
+	// AppFolder 定义业务代码所在的目录，用于监控文件变更使用
+	AppFolder() string
 	// LoadAppConfig 加载新的AppConfig，key为对应的函数转为小写下划线，比如ConfigFolder => config_folder
 	LoadAppConfig(kv map[string]string)
 }
