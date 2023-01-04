@@ -135,7 +135,7 @@ func (p *Proxy) newProxyReverseProxy(frontend, backend *url.URL) *httputil.Rever
 // rebuildBackend 重新编译后端
 func (p *Proxy) rebuildBackend() error {
 	// 重新编译hade
-	cmdBuild := exec.Command("./hade", "build", "backend")
+	cmdBuild := exec.Command("./skeleton", "build", "backend")
 	cmdBuild.Stdout = os.Stdout
 	cmdBuild.Stderr = os.Stderr
 	if err := cmdBuild.Start(); err == nil {
@@ -160,7 +160,7 @@ func (p *Proxy) restartBackend() error {
 	port := p.devConfig.Backend.Port
 	hadeAddress := fmt.Sprintf(":" + port)
 	// 使用命令行启动后端进程
-	cmd := exec.Command("./hade", "app", "start", "--address="+hadeAddress)
+	cmd := exec.Command("./skeleton", "app", "start", "--address="+hadeAddress)
 	cmd.Stdout = os.NewFile(0, os.DevNull)
 	cmd.Stderr = os.Stderr
 	fmt.Println("启动后端服务: ", "http://127.0.0.1:"+port)
