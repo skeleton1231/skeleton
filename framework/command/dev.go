@@ -114,7 +114,7 @@ func (p *Proxy) newProxyReverseProxy(frontend, backend *url.URL) *httputil.Rever
 	// 两个都有进程
 	// 先创建一个后端服务的directory
 	director := func(req *http.Request) {
-		if req.URL.Path == "/" || req.URL.Path == "/app.js" {
+		if req.URL.Path == "/" || req.URL.Path == "/main.js" {
 			req.URL.Scheme = frontend.Scheme
 			req.URL.Host = frontend.Host
 		} else {
