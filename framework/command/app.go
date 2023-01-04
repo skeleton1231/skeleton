@@ -13,7 +13,7 @@ import (
 	"github.com/skeleton1231/skeleton/framework/contract"
 )
 
-var appAddress = ":8881"
+var appAddress = ""
 
 // initAppCommand 初始化app命令和其子命令
 func initAppCommand() *cobra.Command {
