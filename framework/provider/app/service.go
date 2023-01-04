@@ -15,6 +15,9 @@ type HadeApp struct {
 	container  framework.Container // 服务容器
 	baseFolder string              // 基础路径
 	appId      string              // 表示当前这个app的唯一id, 可以用于分布式锁等
+
+	configMap map[string]string // 配置加载
+
 }
 
 // Version 实现版本
@@ -105,6 +108,9 @@ func (h HadeApp) AppID() string {
 	return h.appId
 }
 
-func (h HadeApp) LoadAppConfig(kv map[string]string) {
+func (app *HadeApp) LoadAppConfig(kv map[string]string) {
 	//return nil
+	for key, val := range kv {
+		app.configMap[key] = val
+	}
 }
