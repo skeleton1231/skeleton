@@ -8,6 +8,7 @@ import (
 	"github.com/skeleton1231/skeleton/framework/cobra"
 )
 
+// build相关的命令
 func initBuildCommand() *cobra.Command {
 	buildCommand.AddCommand(buildSelfCommand)
 	buildCommand.AddCommand(buildBackendCommand)
@@ -17,7 +18,7 @@ func initBuildCommand() *cobra.Command {
 }
 
 var buildCommand = &cobra.Command{
-	Use:   "Build",
+	Use:   "build",
 	Short: "编译相关命令",
 	RunE: func(c *cobra.Command, args []string) error {
 		if len(args) == 0 {
@@ -28,13 +29,14 @@ var buildCommand = &cobra.Command{
 }
 
 var buildSelfCommand = &cobra.Command{
-	Use:   "Self",
+	Use:   "self",
 	Short: "编译skeleton命令",
 	RunE: func(c *cobra.Command, args []string) error {
 		path, err := exec.LookPath("go")
 		if err != nil {
-			log.Fatalln("hade go: please install go in path first")
+			log.Fatalln("skeleton go: 请在Path路径中先安装go")
 		}
+
 		cmd := exec.Command(path, "build", "-o", "skeleton", "./")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
@@ -43,7 +45,7 @@ var buildSelfCommand = &cobra.Command{
 			fmt.Println("--------------")
 			return err
 		}
-		fmt.Println("build success please run ./skeleton direct")
+		fmt.Println("编译skeleton成功")
 		return nil
 	},
 }

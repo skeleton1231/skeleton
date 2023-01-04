@@ -14,9 +14,9 @@ func RunCommand(container framework.Container) error {
 	// 根Command
 	var rootCmd = &cobra.Command{
 		// 定义根命令的关键字
-		Use: "hade",
+		Use: "skeleton",
 		// 简短介绍
-		Short: "hade 命令",
+		Short: "skeleton 命令",
 		// 根命令的详细介绍
 		Long: "hade 框架提供的命令行工具，使用这个命令行工具能很方便执行框架自带命令，也能很方便编写业务命令",
 		// 根命令的执行函数

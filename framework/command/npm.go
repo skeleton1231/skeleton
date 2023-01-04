@@ -15,7 +15,7 @@ var npmCommand = &cobra.Command{
 	RunE: func(c *cobra.Command, args []string) error {
 		path, err := exec.LookPath("npm")
 		if err != nil {
-			log.Fatalln("hade npm: should install npm in your PATH")
+			log.Fatalln("skeleton npm: should install npm in your PATH")
 		}
 
 		cmd := exec.Command(path, args...)
